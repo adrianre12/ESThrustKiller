@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESThrustKiller", "ESThrustKiller.csproj", "{F8DD9684-EC48-40E7-86AE-5623DC993FD4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F8DD9684-EC48-40E7-86AE-5623DC993FD4}.Debug|x64.ActiveCfg = Debug|x64
+		{F8DD9684-EC48-40E7-86AE-5623DC993FD4}.Debug|x64.Build.0 = Debug|x64
+		{F8DD9684-EC48-40E7-86AE-5623DC993FD4}.Release|x64.ActiveCfg = Release|x64
+		{F8DD9684-EC48-40E7-86AE-5623DC993FD4}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0792A33-8A41-47D2-A762-9A16CADDBA39}
+	EndGlobalSection
+EndGlobal
