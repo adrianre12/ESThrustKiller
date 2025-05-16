@@ -20,6 +20,7 @@ namespace ESThrustKiller.ZoneThrust
         private int slowPollCounter = 0;
         private Vector3D myPosition;
         private MyPlanet closestPlanet;
+        private ZoneConfig.PlanetInfo planetInfo;
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -69,7 +70,7 @@ namespace ESThrustKiller.ZoneThrust
             if (slowPollCounter > 0)
             {
                 slowPollCounter--;
-                Log.Msg("Update100 slowpoll.");
+                Log.Msg($"Update100 slowpoll. {slowPollCounter}");
 
                 return;
             }
@@ -80,17 +81,18 @@ namespace ESThrustKiller.ZoneThrust
 
             if (MyAPIGateway.GravityProviderSystem.CalculateNaturalGravityInPoint(myPosition).LengthSquared() == 0f)
             {
+                Log.Msg($"No Gravity Grid={myThrust.CubeGrid.DisplayName} turnOff={turnOff} ");
                 return;
             }
 
-            string planet = "";
+            string planetName = "";
             closestPlanet = MyGamePruningStructure.GetClosestPlanet(myPosition);
             if (closestPlanet != null && closestPlanet.Generator != null)
             {
-                planet = closestPlanet.Generator.FolderName;
+                planetName = closestPlanet.Generator.FolderName;
             }
 
-            if (!config.PlanetNames.Contains(planet))
+            if (!config.TryGetPlanet(planetName, out planetInfo))
             {
                 slowPollCounter = SlowPollPeriod;
                 return;
@@ -104,10 +106,13 @@ namespace ESThrustKiller.ZoneThrust
             }
 
             // get cached altitude
+            var altiude = GetAltitude();
 
             //turnOff = bellow altitude;
 
-            Log.Msg($"Grid={myThrust.CubeGrid.DisplayName} Planet={planet} trunOff={turnOff}");
+            turnOff = altiude < (double)planetInfo.Altitude;
+
+            Log.Msg($"Grid={myThrust.CubeGrid.DisplayName} Planet={planetName} turnOff={turnOff} altitude={altiude} AltidudeLimit={planetInfo.Altitude}");
 
             //var inGrav = MyAPIGateway.GravityProviderSystem.IsPositionInNaturalGravity(myThrust.CubeGrid.GetPosition());
             //MyPlanet tmp = MyGamePruningStructure.GetClosestPlanet(myThrust.CubeGrid.GetPosition());

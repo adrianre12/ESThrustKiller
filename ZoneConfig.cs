@@ -10,16 +10,43 @@ namespace ESThrustKiller.Configuration
     {
         const string configFilename = "Config-ESThrustKiller.xml";
 
-        public List<string> PlanetNames;
+        public List<PlanetInfo> Planets;
         public bool DebugLog;
 
         [XmlIgnore]
         public bool ConfigLoaded;
 
+        public struct PlanetInfo
+        {
+            public string Name;
+            public int Altitude;
+
+            public PlanetInfo(string name, int altitude)
+            {
+                Name = name;
+                Altitude = altitude;
+            }
+        }
+
+
         public ZoneConfig()
         {
-            PlanetNames = new List<string>();
+            Planets = new List<PlanetInfo>();
             DebugLog = false;
+        }
+
+        public bool TryGetPlanet(string name, out PlanetInfo planetInfo)
+        {
+            foreach (PlanetInfo info in Planets)
+            {
+                if (info.Name == name)
+                {
+                    planetInfo = info;
+                    return true;
+                }
+            }
+            planetInfo = new PlanetInfo();
+            return false;
         }
 
         public ZoneConfig LoadSettings()
@@ -42,23 +69,18 @@ namespace ESThrustKiller.Configuration
                 catch (Exception exc)
                 {
 
-                    Log.Msg($"ERROR: Could Not Load Settings From {configFilename}. Using Default Configuration.");
-                    var defaultSettings = new ZoneConfig();
-                    defaultSettings.PlanetNames.Add("PlanetA");
-                    defaultSettings.PlanetNames.Add("PlanetB");
-                    return defaultSettings;
+                    Log.Msg($"ERROR: Could Not Load Settings From {configFilename}. Using Empty Configuration.");
+                    return new ZoneConfig();
 
                 }
 
             }
-            else
-            {
 
-                Log.Msg("Config-ESThrustKiller Doesn't Exist. Creating Default Configuration. ");
+            Log.Msg($"{configFilename} Doesn't Exist. Creating Default Configuration. ");
 
-            }
-
-            var settings = new ZoneConfig();
+            var defaultSettings = new ZoneConfig();
+            defaultSettings.Planets.Add(new PlanetInfo("PlanetA", 10000));
+            defaultSettings.Planets.Add(new PlanetInfo("PlanetB", 20000));
 
             try
             {
@@ -66,7 +88,7 @@ namespace ESThrustKiller.Configuration
                 using (var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(configFilename, typeof(ZoneConfig)))
                 {
 
-                    writer.Write(MyAPIGateway.Utilities.SerializeToXML<ZoneConfig>(settings));
+                    writer.Write(MyAPIGateway.Utilities.SerializeToXML<ZoneConfig>(defaultSettings));
 
                 }
 
@@ -78,7 +100,7 @@ namespace ESThrustKiller.Configuration
 
             }
 
-            return settings;
+            return defaultSettings;
         }
     }
 }
