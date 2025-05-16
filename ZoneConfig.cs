@@ -1,5 +1,6 @@
 ﻿using Sandbox.ModAPI;
 using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace ESThrustKiller.Configuration
@@ -9,14 +10,16 @@ namespace ESThrustKiller.Configuration
     {
         const string configFilename = "Config-ESThrustKiller.xml";
 
-        public string Test;
+        public List<string> PlanetNames;
+        public bool DebugLog;
 
         [XmlIgnore]
         public bool ConfigLoaded;
 
         public ZoneConfig()
         {
-            Test = "Testing.";
+            PlanetNames = new List<string>();
+            DebugLog = false;
         }
 
         public ZoneConfig LoadSettings()
@@ -41,6 +44,8 @@ namespace ESThrustKiller.Configuration
 
                     Log.Msg($"ERROR: Could Not Load Settings From {configFilename}. Using Default Configuration.");
                     var defaultSettings = new ZoneConfig();
+                    defaultSettings.PlanetNames.Add("PlanetA");
+                    defaultSettings.PlanetNames.Add("PlanetB");
                     return defaultSettings;
 
                 }
