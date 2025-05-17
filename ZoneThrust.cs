@@ -118,6 +118,20 @@ namespace ESThrustKiller.ZoneThrust
             //MyPlanet tmp = MyGamePruningStructure.GetClosestPlanet(myThrust.CubeGrid.GetPosition());
             //var height = tmp.GetHeightFromSurface(myThrust.CubeGrid.GetPosition());
 
+            //var tmp = MySessionComponentSafeZones.SafeZones;
+            var entityID = myThrust.CubeGrid.EntityId;
+
+            var inSafeZone = false;
+            foreach (var zone in MySessionComponentSafeZones.SafeZones)
+            {
+                if (MySessionComponentSafeZones.IsInSafezone(entityID, zone))
+                {
+                    inSafeZone = true;
+                    break;
+                }
+            }
+            Log.Msg($"Grid={myThrust.CubeGrid.DisplayName} inSafeZone={inSafeZone}");
+
         }
 
 
