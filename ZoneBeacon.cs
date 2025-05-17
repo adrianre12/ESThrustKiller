@@ -35,8 +35,6 @@ namespace ESThrustKiller.ZoneBeacon
             if (!MyAPIGateway.Session.IsServer)
                 return;
 
-            Log.DebugLog = true;
-
             Log.Msg("Init.");
             NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
 
