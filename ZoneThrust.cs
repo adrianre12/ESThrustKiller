@@ -19,6 +19,7 @@ namespace ESThrustKiller.ZoneThrust
 
         private static Dictionary<long, bool> turnOffCache = new Dictionary<long, bool>();
         private IMyThrust myThrust;
+        private double altiude;
         private bool turnOff = false;
         private int slowPollCounter = 0;
         private Vector3D myPosition;
@@ -106,27 +107,24 @@ namespace ESThrustKiller.ZoneThrust
                 return;
             }
 
-            string planetName = "";
             closestPlanet = MyGamePruningStructure.GetClosestPlanet(myPosition); //in gravity find planet
             if (closestPlanet != null && closestPlanet.Generator != null)
             {
-                planetName = closestPlanet.Generator.FolderName;
+                if (!config.TryGetPlanet(closestPlanet.Generator.FolderName, out planetInfo)) //planet not found go back to slowPoll
+                {
+                    SlowMode();
+                    Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
+                    return;
+                }
             }
 
-            if (!config.TryGetPlanet(planetName, out planetInfo)) //planet not found go back to slowPoll
-            {
-                SlowMode();
-                Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
-                return;
-            }
-
-            var altiude = closestPlanet.GetHeightFromSurface(myThrust.CubeGrid.GetPosition());
+            altiude = closestPlanet.GetHeightFromSurface(myThrust.CubeGrid.GetPosition());
 
             //turnOff, bellow altitude and not in zone;
             turnOff = NotInSafeZone() && altiude < (double)planetInfo.Altitude;
             turnOffCache[myThrust.CubeGrid.EntityId] = turnOff;
 
-            Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} Planet={planetName} turnOff={turnOff} altitude={altiude} AltidudeLimit={planetInfo.Altitude}");
+            Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} turnOff={turnOff} altitude={altiude} AltidudeLimit={planetInfo.Altitude}");
         }
 
         private bool NotInSafeZone()
@@ -139,24 +137,5 @@ namespace ESThrustKiller.ZoneThrust
         {
             slowPollCounter = SlowPollPeriod;
         }
-
-
-
-
-        /*        private bool NotInSafeZone()
-                {
-                    var inSafeZone = false;
-                    foreach (var zone in MySessionComponentSafeZones.SafeZones)
-                    {
-                        if (MySessionComponentSafeZones.IsInSafezone(myThrust.CubeGrid.EntityId, zone))
-                        {
-                            inSafeZone = true;
-                            break;
-                        }
-                    }
-                    Log.Msg($"1 Grid={myThrust.CubeGrid.DisplayName} inSafeZone={inSafeZone}");
-                    return !inSafeZone;
-                }*/
-
     }
 }
