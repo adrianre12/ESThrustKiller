@@ -24,9 +24,6 @@ namespace ESThrustKiller.ZoneBeacon
 
         private IMyBeacon myBeacon;
 
-        private MySafeZone zone1;
-        private MySafeZone zone2;
-
         private float width = 10f;
         private float height = 10f;
         private float vertOffset = 2.5f;
@@ -53,9 +50,7 @@ namespace ESThrustKiller.ZoneBeacon
         private void MyBeacon_EnabledChanged(IMyTerminalBlock obj)
         {
             if (!zonesCreated)
-            {
                 return;
-            }
 
             if (myBeacon.Enabled)
             {
@@ -99,37 +94,19 @@ namespace ESThrustKiller.ZoneBeacon
         {
             if (!MyAPIGateway.Session.IsServer)
                 return;
-            //Log.Msg("Update100.");
 
             if (myBeacon.Enabled)
-            {
                 CreateZones();
-            }
-
         }
 
         public void CreateZones()
         {
             Log.Msg("CreateZones");
             if (zoneIds.Count > 0)
-            {
                 return;
-            }
             zoneIds.Clear();
 
             var colour = new Vector3D(0, 255, 0);
-
-            //var position1 = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * vertOffset;
-            //zone1 = (MySafeZone)MySessionComponentSafeZones.CrateSafeZone(MatrixD.CreateWorld(position1, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, MySafeZoneAccess.Blacklist, null, null, 10f, true, true, colour, "SafeZone_Texture_Disco", 0L, "FlyZone1");
-            //zone1.Size = new Vector3D(width, height, width);
-            //var position2 = position1 + myBeacon.WorldMatrix.Up * (height + 0.01);
-            //zoneId2 = MySessionComponentSafeZones.CrateSafeZone(MatrixD.CreateWorld(position2, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, MySafeZoneAccess.Blacklist, null, null, 10f, true, true, colour, "SafeZone_Texture_Disco", 0L, "FlyZone2");
-            // ((MySafeZone)zoneId2).Size = new Vector3D(width, height, width);
-
-            //ob.AllowedActions = CastHax(MySessionComponentSafeZones.AllowedActions, 0x3FF);
-
-            //zone1 = (MySafeZone)CrateSafeZone(MatrixD.CreateWorld(position1, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, colour, "FlyZone1");
-
             var zoneIdsStr = new StringBuilder();
             var position = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * vertOffset;
             for (int i = 0; i < numZones; i++)
@@ -139,11 +116,9 @@ namespace ESThrustKiller.ZoneBeacon
                 zoneIds.Add(zone.EntityId);
                 zoneIdsStr.Append($"{zone.EntityId},");
             }
-            ;
+
             Log.Msg($"zoneIdsStr={zoneIdsStr.ToString()}");
             myBeacon.Storage[ZoneIdsKey] = zoneIdsStr.ToString();
-            //Log.Msg($"Entity.Storage[ZoneIdsKey] ={myBeacon.Storage[ZoneIdsKey]}");
-
             zonesCreated = true;
         }
 
@@ -174,9 +149,8 @@ namespace ESThrustKiller.ZoneBeacon
         private void RemoveZones()
         {
             if (zoneIds.Count == 0)
-            {
                 return;
-            }
+
             foreach (var zoneId in zoneIds)
             {
                 MySessionComponentSafeZones.RequestDeleteSafeZone(zoneId);
