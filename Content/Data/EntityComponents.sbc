@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <EntityComponents>
+		<EntityComponent xsi:type="MyObjectBuilder_ModStorageComponentDefinition">
+			<Id>
+				<TypeId>ModStorageComponent</TypeId>
+				<SubtypeId>LargeBlockZoneBeacon</SubtypeId>
+			</Id>
+			<RegisteredStorageGuids>
+				<guid>0a1db65e-a169-4cf2-9a83-8903add9ca26</guid>
+			</RegisteredStorageGuids>
+		</EntityComponent>
+    </EntityComponents>
+</Definitions>
