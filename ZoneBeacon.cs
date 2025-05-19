@@ -32,8 +32,7 @@ namespace ESThrustKiller.ZoneBeacon
         private float vertOffset = 2.5f;
         private int numZones = 2;
         private List<long> zoneIds = new List<long>();
-
-
+        private bool zonesCreated;
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -47,6 +46,27 @@ namespace ESThrustKiller.ZoneBeacon
 
             if (myBeacon.Storage == null)
                 myBeacon.Storage = new MyModStorageComponent();
+
+            myBeacon.EnabledChanged += MyBeacon_EnabledChanged;
+        }
+
+        private void MyBeacon_EnabledChanged(IMyTerminalBlock obj)
+        {
+            if (!zonesCreated)
+            {
+                return;
+            }
+
+            if (myBeacon.Enabled)
+            {
+                Log.Msg("Enabled");
+                CreateZones();
+            }
+            else
+            {
+                Log.Msg("Disabled");
+                RemoveZones();
+            }
         }
 
         public override void UpdateOnceBeforeFrame()
@@ -58,14 +78,19 @@ namespace ESThrustKiller.ZoneBeacon
             string tmpIdsStr;
             if (myBeacon.Storage.TryGetValue(ZoneIdsKey, out tmpIdsStr))
             {
+                zoneIds.Clear();
                 var tmp = tmpIdsStr.Split(',');
-                Log.Msg($"tmpIdsStr={tmpIdsStr} tmp.count={tmp.Length}");
-                foreach (var str in tmpIdsStr.Split(','))
+                foreach (var str in tmpIdsStr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var val = Convert.ToInt64(str);
-                    Log.Msg($"{str}={val}");
-
+                    Int64 val = 0;
+                    if (!Int64.TryParse(str, out val))
+                    {
+                        Log.Msg($"Failed to Parse Int64: {str}");
+                        continue;
+                    }
+                    zoneIds.Add(val);
                 }
+                Log.Msg($"ZoneIDs loaded: {zoneIds.Count}");
             }
             NeedsUpdate = MyEntityUpdateEnum.EACH_100TH_FRAME;
         }
@@ -76,12 +101,16 @@ namespace ESThrustKiller.ZoneBeacon
                 return;
             //Log.Msg("Update100.");
 
-            CreateZones();
+            if (myBeacon.Enabled)
+            {
+                CreateZones();
+            }
 
         }
 
         public void CreateZones()
         {
+            Log.Msg("CreateZones");
             if (zoneIds.Count > 0)
             {
                 return;
@@ -113,7 +142,9 @@ namespace ESThrustKiller.ZoneBeacon
             ;
             Log.Msg($"zoneIdsStr={zoneIdsStr.ToString()}");
             myBeacon.Storage[ZoneIdsKey] = zoneIdsStr.ToString();
-            Log.Msg($"Entity.Storage[ZoneIdsKey] ={myBeacon.Storage[ZoneIdsKey]}");
+            //Log.Msg($"Entity.Storage[ZoneIdsKey] ={myBeacon.Storage[ZoneIdsKey]}");
+
+            zonesCreated = true;
         }
 
         //public static T CastHax<T>(T typeRef, object castObj) => (T)castObj;
@@ -140,8 +171,7 @@ namespace ESThrustKiller.ZoneBeacon
             return MyEntities.CreateFromObjectBuilderAndAdd(myObjectBuilder_SafeZone, fadeIn: false);
         }
 
-
-        public override void OnRemovedFromScene()
+        private void RemoveZones()
         {
             if (zoneIds.Count == 0)
             {
@@ -151,7 +181,13 @@ namespace ESThrustKiller.ZoneBeacon
             {
                 MySessionComponentSafeZones.RequestDeleteSafeZone(zoneId);
             }
-
+            zoneIds.Clear();
         }
+
+        public override void OnRemovedFromScene()
+        {
+            RemoveZones();
+        }
+
     }
 }
