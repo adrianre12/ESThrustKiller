@@ -89,7 +89,7 @@ namespace ESThrustKiller.ZoneBeacon
                     }
                     zoneIds.Add(val);
                 }
-                Log.Msg($"ZoneIDs loaded: {zoneIds.Count}");
+                //Log.Msg($"ZoneIDs loaded: {zoneIds.Count}");
             }
             NeedsUpdate = MyEntityUpdateEnum.EACH_100TH_FRAME;
         }
@@ -107,7 +107,7 @@ namespace ESThrustKiller.ZoneBeacon
         {
             if (zoneIds.Count > 0)
                 return;
-            Log.Msg($"CreateZones ZoneIds.Count={zoneIds.Count}");
+            //Log.Msg($"CreateZones ZoneIds.Count={zoneIds.Count}");
 
             zoneIds.Clear();
 
@@ -115,16 +115,16 @@ namespace ESThrustKiller.ZoneBeacon
 
             var colour = new Vector3D(0, 255, 0);
             var zoneIdsStr = new StringBuilder();
-            var position = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * (vertOffset + 2.5);
+            var beaconPosition = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * (vertOffset - 2.5);
             for (int i = 0; i < numZones; i++)
             {
-                position += i * myBeacon.WorldMatrix.Up * (height + 0.01);
+                var position = beaconPosition + i * myBeacon.WorldMatrix.Up * (height + 0.01);
                 var zone = (MySafeZone)CrateSafeZone(MatrixD.CreateWorld(position, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, colour, $"FlyZone{i + 1}");
                 zoneIds.Add(zone.EntityId);
                 zoneIdsStr.Append($"{zone.EntityId},");
             }
 
-            Log.Msg($"ZoneIds.Count={zoneIds.Count} zoneIdsStr={zoneIdsStr.ToString()}");
+            //Log.Msg($"ZoneIds.Count={zoneIds.Count} zoneIdsStr={zoneIdsStr.ToString()}");
             myBeacon.Storage[ZoneIdsKey] = zoneIdsStr.ToString();
         }
 
@@ -178,13 +178,14 @@ namespace ESThrustKiller.ZoneBeacon
 
         private void CreateCDConfig()
         {
-            Log.Msg("Creating CD config");
+            //Log.Msg("Creating CD config");
             config.Clear();
             var sb = new StringBuilder();
             sb.AppendLine("Width: 10<value<1000 Horizontal size of each zone");
             sb.AppendLine("Height: 10<value<1000 Verical size of each zone");
             sb.AppendLine("VerticalOffset: -500<value<500 Verical displacement of each zone relative to the beacon");
             sb.AppendLine("NumberOfZones: 1<value<10");
+            sb.AppendLine("Toggle enabled off/on to recreate zones.");
 
             config.AddSection("Settings");
             config.SetSectionComment("Settings", sb.ToString());
@@ -214,7 +215,7 @@ namespace ESThrustKiller.ZoneBeacon
         }
         private bool LoadConfigFromCD()
         {
-            Log.Msg("LoadConfigFromCD");
+            //Log.Msg("LoadConfigFromCD");
             if (config.TryParse(myBeacon.CustomData))
             {
                 if (!config.ContainsSection("Settings"))
