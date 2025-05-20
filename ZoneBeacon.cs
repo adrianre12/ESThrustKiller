@@ -8,6 +8,7 @@ using System.Text;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI.Ingame.Utilities;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRageMath;
@@ -19,17 +20,20 @@ namespace ESThrustKiller.ZoneBeacon
     public class ZoneBeaconGameLogic : MyGameLogicComponent
     {
         const string VisualTexture = "SafeZone_Texture_Disco";
+        const float DefaultWidth = 10f;
+        const float DefaultHeight = 10f;
+        const float DefaultVertOffset = 0f;
+        const int DefultNumZones = 2;
 
         public static Guid ZoneIdsKey = new Guid("0a1db65e-a169-4cf2-9a83-8903add9ca26");
 
         private IMyBeacon myBeacon;
-
-        private float width = 10f;
-        private float height = 10f;
-        private float vertOffset = 2.5f;
-        private int numZones = 2;
+        private MyIni config = new MyIni();
+        private double width;
+        private double height;
+        private double vertOffset;
+        private int numZones;
         private List<long> zoneIds = new List<long>();
-        private bool zonesCreated;
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -49,7 +53,7 @@ namespace ESThrustKiller.ZoneBeacon
 
         private void MyBeacon_EnabledChanged(IMyTerminalBlock obj)
         {
-            if (!zonesCreated)
+            if (zoneIds.Count == 0)
                 return;
 
             if (myBeacon.Enabled)
@@ -101,14 +105,17 @@ namespace ESThrustKiller.ZoneBeacon
 
         public void CreateZones()
         {
-            Log.Msg("CreateZones");
             if (zoneIds.Count > 0)
                 return;
+            Log.Msg($"CreateZones ZoneIds.Count={zoneIds.Count}");
+
             zoneIds.Clear();
+
+            LoadConfig();
 
             var colour = new Vector3D(0, 255, 0);
             var zoneIdsStr = new StringBuilder();
-            var position = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * vertOffset;
+            var position = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * (vertOffset + 2.5);
             for (int i = 0; i < numZones; i++)
             {
                 position += i * myBeacon.WorldMatrix.Up * (height + 0.01);
@@ -117,9 +124,8 @@ namespace ESThrustKiller.ZoneBeacon
                 zoneIdsStr.Append($"{zone.EntityId},");
             }
 
-            Log.Msg($"zoneIdsStr={zoneIdsStr.ToString()}");
+            Log.Msg($"ZoneIds.Count={zoneIds.Count} zoneIdsStr={zoneIdsStr.ToString()}");
             myBeacon.Storage[ZoneIdsKey] = zoneIdsStr.ToString();
-            zonesCreated = true;
         }
 
         //public static T CastHax<T>(T typeRef, object castObj) => (T)castObj;
@@ -160,8 +166,82 @@ namespace ESThrustKiller.ZoneBeacon
 
         public override void OnRemovedFromScene()
         {
+            myBeacon.EnabledChanged -= MyBeacon_EnabledChanged;
             RemoveZones();
         }
 
+        private void LoadConfig()
+        {
+            if (!LoadConfigFromCD())
+                CreateCDConfig();
+        }
+
+        private void CreateCDConfig()
+        {
+            Log.Msg("Creating CD config");
+            config.Clear();
+            var sb = new StringBuilder();
+            sb.AppendLine("Width: 10<value<1000 Horizontal size of each zone");
+            sb.AppendLine("Height: 10<value<1000 Verical size of each zone");
+            sb.AppendLine("VerticalOffset: -500<value<500 Verical displacement of each zone relative to the beacon");
+            sb.AppendLine("NumberOfZones: 1<value<10");
+
+            config.AddSection("Settings");
+            config.SetSectionComment("Settings", sb.ToString());
+
+            width = DefaultWidth;
+            config.Set("Settings", "Width", width);
+            height = DefaultHeight;
+            config.Set("Settings", "Height", height);
+            vertOffset = DefaultVertOffset;
+            config.Set("Settings", "VericalOffset", vertOffset);
+            numZones = DefultNumZones;
+            config.Set("Settings", "NumberOfZones", numZones);
+
+            config.Invalidate();
+            myBeacon.CustomData = config.ToString();
+        }
+
+        private double ClampDouble(double value, double min, double max)
+        {
+            if (value < min)
+                return min;
+
+            else if (value > max)
+                return max;
+
+            return value;
+        }
+        private bool LoadConfigFromCD()
+        {
+            Log.Msg("LoadConfigFromCD");
+            if (config.TryParse(myBeacon.CustomData))
+            {
+                if (!config.ContainsSection("Settings"))
+                    return false;
+
+                if (!config.Get("Settings", "Width").TryGetDouble(out width))
+                    return false;
+                width = ClampDouble(width, 10, 1000);
+
+                if (!config.Get("Settings", "Height").TryGetDouble(out height))
+                    return false;
+                height = ClampDouble(height, 10, 1000);
+
+                if (!config.Get("Settings", "VericalOffset").TryGetDouble(out vertOffset))
+                    return false;
+                vertOffset = ClampDouble(vertOffset, -500, 500);
+
+                if (!config.Get("Settings", "NumberOfZones").TryGetInt32(out numZones))
+                    return false;
+                if (numZones < 1)
+                    numZones = 1;
+                if (numZones > 10)
+                    numZones = 10;
+                return true;
+            }
+            Log.Msg("Failed to load config");
+            return false;
+        }
     }
 }
