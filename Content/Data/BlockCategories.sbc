@@ -7,7 +7,7 @@
                 <SubtypeId/>
             </Id>
             <DisplayName>ES Admin</DisplayName>
-            <Name>ES Admin</Name>
+            <Name>ZZZZZ ES Admin</Name>
 			<StrictSearch>true</StrictSearch>
             <ItemIds>
                 <string>Beacon/LargeBlockZoneBeacon</string>

@@ -8,7 +8,8 @@
             </Id>
             <DisplayName>Admin Zone Beacon</DisplayName>
             <Icon>Textures\GUI\Icons\Cubes\beacon.dds</Icon>
-            <Description>Beacon to mark centre of zone</Description>
+			<Icon>Textures\GUI\Icons\Overlays\Admin.dds</Icon>
+			<Description>Beacon to mark centre of zone</Description>
             <CubeSize>Large</CubeSize>
             <GuiVisible>false</GuiVisible>
             <BlockTopology>TriangleMesh</BlockTopology>
