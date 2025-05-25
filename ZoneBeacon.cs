@@ -166,6 +166,9 @@ namespace ESThrustKiller.ZoneBeacon
 
         public override void OnRemovedFromScene()
         {
+            if (!MyAPIGateway.Session.IsServer)
+                return;
+
             myBeacon.EnabledChanged -= MyBeacon_EnabledChanged;
             RemoveZones();
         }

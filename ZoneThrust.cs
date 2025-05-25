@@ -13,7 +13,7 @@ namespace ESThrustKiller.ZoneThrust
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Thrust), false)]
     public class ZoneThrust : MyGameLogicComponent
     {
-        const int SlowPollPeriod = 10;
+        const int SlowPollPeriod = 60;
         private static ZoneConfig config = new ZoneConfig();
         private static long currentFrame;
 

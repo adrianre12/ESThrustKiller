@@ -18,8 +18,13 @@
             <Model>Models\Cubes\Large\beacon.mwm</Model>
             <Components>
                 <Component Subtype="SteelPlate" Count="40" />
-                <Component Subtype="Construction" Count="30" />
-                <Component Subtype="LargeTube" Count="20" />
+				<Component Subtype="ESRestrictedConstruction" Count="1">
+					<DeconstructId>
+						<TypeId>Ore</TypeId>
+						<SubtypeId>Scrap</SubtypeId>
+					</DeconstructId>
+				</Component>
+				<Component Subtype="LargeTube" Count="20" />
                 <Component Subtype="Computer" Count="10" />
                 <Component Subtype="RadioCommunication" Count="40" />
                 <Component Subtype="SteelPlate" Count="40" />
