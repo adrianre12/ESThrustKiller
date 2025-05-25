@@ -2,6 +2,7 @@
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -50,6 +51,9 @@ namespace ESThrustKiller.ZoneThrust
 
         public override void UpdateOnceBeforeFrame()
         {
+            if (!MyAPIGateway.Session.IsServer)
+                return;
+
             base.UpdateOnceBeforeFrame();
             if (config != null && !config.ConfigLoaded)
             {
@@ -68,12 +72,12 @@ namespace ESThrustKiller.ZoneThrust
             if (slowPollCounter > 0)
             {
                 slowPollCounter--;
-                Log.Debug($"Update100 slowpoll. {slowPollCounter}");
+                //Log.Debug($"Update100 slowpoll. {slowPollCounter}");
 
                 return;
             }
 
-            if (MyAPIGateway.Session.GameplayFrameCounter > currentFrame + 100)
+            if (MyAPIGateway.Session.GameplayFrameCounter > currentFrame + 200)
             {
                 currentFrame = MyAPIGateway.Session.GameplayFrameCounter;
                 turnOffCache.Clear();
@@ -91,40 +95,80 @@ namespace ESThrustKiller.ZoneThrust
 
         private void FetchCachedTurnOff()
         {
-            if (turnOffCache.TryGetValue(myThrust.CubeGrid.EntityId, out turnOff))
+            try
             {
-                Log.Debug($"Cache hit Grid={myThrust.CubeGrid.DisplayName} ");
-                return;
+                if (turnOffCache.TryGetValue(myThrust.CubeGrid.EntityId, out turnOff))
+                {
+                    Log.Debug($"Cache hit Grid={myThrust.CubeGrid.DisplayName} ");
+                    return;
+                }
+                Log.Debug($"Cache miss Grid={myThrust.CubeGrid.DisplayName} ");
             }
-            Log.Debug($"Cache miss Grid={myThrust.CubeGrid.DisplayName} ");
+            catch (NullReferenceException ex)
+            {
+                Log.Msg($"NullReference in FetchCachedTurnOff() part 1: {ex}");
+            }
 
             //not found calculate value
-            myPosition = myThrust.CubeGrid.GetPosition();
-            if (MyAPIGateway.GravityProviderSystem.CalculateNaturalGravityInPoint(myPosition).LengthSquared() == 0f)
+            try
             {
-                SlowMode();
-                Log.Debug($"No Gravity, Grid={myThrust.CubeGrid.DisplayName} turnOff={turnOff} ");
-                return;
-            }
-
-            closestPlanet = MyGamePruningStructure.GetClosestPlanet(myPosition); //in gravity find planet
-            if (closestPlanet != null && closestPlanet.Generator != null)
-            {
-                if (!config.TryGetPlanet(closestPlanet.Generator.FolderName, out planetInfo)) //planet not found go back to slowPoll
+                myPosition = myThrust.CubeGrid.GetPosition();
+                if (MyAPIGateway.GravityProviderSystem.CalculateNaturalGravityInPoint(myPosition).LengthSquared() == 0f)
                 {
                     SlowMode();
-                    Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
+                    Log.Debug($"No Gravity, Grid={myThrust.CubeGrid.DisplayName} turnOff={turnOff} ");
                     return;
                 }
             }
+            catch (NullReferenceException ex)
+            {
+                Log.Msg($"NullReference in FetchCachedTurnOff() part 2: {ex}");
+            }
 
-            altiude = closestPlanet.GetHeightFromSurface(myThrust.CubeGrid.GetPosition());
+            try
+            {
+                closestPlanet = MyGamePruningStructure.GetClosestPlanet(myPosition); //in gravity find planet
+                if (closestPlanet != null && closestPlanet.Generator != null)
+                {
+                    if (!config.TryGetPlanet(closestPlanet.Generator.FolderName, out planetInfo)) //planet not found go back to slowPoll
+                    {
+                        SlowMode();
+                        Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
+                        return;
+                    }
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Msg($"NullReference in FetchCachedTurnOff() part 3: {ex}");
+            }
 
-            //turnOff, bellow altitude and not in zone;
-            turnOff = NotInSafeZone() && altiude < (double)planetInfo.Altitude;
-            turnOffCache[myThrust.CubeGrid.EntityId] = turnOff;
+            try
+            {
+                altiude = closestPlanet.GetHeightFromSurface(myThrust.CubeGrid.GetPosition());
 
-            Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} turnOff={turnOff} altitude={altiude} AltidudeLimit={planetInfo.Altitude}");
+                //turnOff, bellow altitude and not in zone;
+                turnOff = NotInSafeZone() && altiude < (double)planetInfo.Altitude;
+                turnOffCache[myThrust.CubeGrid.EntityId] = turnOff;
+
+                if (turnOff)
+                    SlowMode();
+
+                Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} turnOff={turnOff} altitude={altiude} AltidudeLimit={planetInfo.Altitude}");
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Msg($"NullReference in FetchCachedTurnOff() part 4: {ex}");
+            }
+        }
+
+        public override void OnRemovedFromScene()
+        {
+            if (!MyAPIGateway.Session.IsServer)
+                return;
+
+            NeedsUpdate = MyEntityUpdateEnum.NONE;
+            myThrust.EnabledChanged -= MyThrust_EnabledChanged;
         }
 
         private bool NotInSafeZone()
