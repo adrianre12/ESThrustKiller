@@ -85,7 +85,12 @@ namespace ESThrustKiller.ZoneThrust
             }
 
             //get turnOff from cache
-            FetchCachedTurnOff();
+            if (!FetchCachedTurnOff())
+            {
+                //not cached so cache it.
+                turnOffCache[myThrust.CubeGrid.EntityId] = turnOff;
+            }
+
 
             if (turnOff)
             {
@@ -93,20 +98,21 @@ namespace ESThrustKiller.ZoneThrust
             }
         }
 
-        private void FetchCachedTurnOff()
+        private bool FetchCachedTurnOff()
         {
             try
             {
                 if (turnOffCache.TryGetValue(myThrust.CubeGrid.EntityId, out turnOff))
                 {
                     Log.Debug($"Cache hit Grid={myThrust.CubeGrid.DisplayName} ");
-                    return;
+                    return true;
                 }
                 Log.Debug($"Cache miss Grid={myThrust.CubeGrid.DisplayName} ");
             }
             catch (NullReferenceException ex)
             {
                 Log.Msg($"NullReference in FetchCachedTurnOff() part 1: {ex}");
+                return false;
             }
 
             //not found calculate value
@@ -117,12 +123,13 @@ namespace ESThrustKiller.ZoneThrust
                 {
                     SlowMode();
                     Log.Debug($"No Gravity, Grid={myThrust.CubeGrid.DisplayName} turnOff={turnOff} ");
-                    return;
+                    return false;
                 }
             }
             catch (NullReferenceException ex)
             {
                 Log.Msg($"NullReference in FetchCachedTurnOff() part 2: {ex}");
+                return false;
             }
 
             try
@@ -134,13 +141,14 @@ namespace ESThrustKiller.ZoneThrust
                     {
                         SlowMode();
                         Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
-                        return;
+                        return false;
                     }
                 }
             }
             catch (NullReferenceException ex)
             {
                 Log.Msg($"NullReference in FetchCachedTurnOff() part 3: {ex}");
+                return false;
             }
 
             try
@@ -149,7 +157,6 @@ namespace ESThrustKiller.ZoneThrust
 
                 //turnOff, bellow altitude and not in zone;
                 turnOff = NotInSafeZone() && altiude < (double)planetInfo.Altitude;
-                turnOffCache[myThrust.CubeGrid.EntityId] = turnOff;
 
                 if (turnOff)
                     SlowMode();
@@ -159,7 +166,10 @@ namespace ESThrustKiller.ZoneThrust
             catch (NullReferenceException ex)
             {
                 Log.Msg($"NullReference in FetchCachedTurnOff() part 4: {ex}");
+                return false;
             }
+
+            return false;
         }
 
         public override void OnRemovedFromScene()
