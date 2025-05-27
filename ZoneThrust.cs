@@ -15,8 +15,8 @@ namespace ESThrustKiller.ZoneThrust
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Thrust), false)]
     public class ZoneThrust : MyGameLogicComponent
     {
-        const int PollPeriodSpace = 12;//375; //10 mins
-        const int PollPeriodPlanet = 3; //37; //1 min
+        const int PollPeriodSpace = 375;//12;//375; //10 mins
+        const int PollPeriodPlanet = 37;//3; //37; //1 min
         const int MaxAltitude = 65000;
 
         private IMyThrust myThrust;
@@ -76,7 +76,7 @@ namespace ESThrustKiller.ZoneThrust
             if (pollCounter > 0) //using a poll counter to avoid having to get the frame counter each time.
             {
                 pollCounter--;
-                Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
+                //Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
                 return;
             }
             currentFrame = MyAPIGateway.Session.GameplayFrameCounter;
@@ -84,7 +84,7 @@ namespace ESThrustKiller.ZoneThrust
 
             if (currentFrame > currentState.NextFrame)
             {
-                Log.Debug($"Cache Expired Grid={myThrust.CubeGrid.DisplayName} {currentFrame} > {currentState.NextFrame}");
+                //Log.Debug($"Cache Expired Grid={myThrust.CubeGrid.DisplayName} {currentFrame} > {currentState.NextFrame}");
                 CalculateState();
                 cacheHit = false;
             }
@@ -103,7 +103,11 @@ namespace ESThrustKiller.ZoneThrust
                 currentState.NextFrame = currentFrame + pollCounter * 100;
                 GridStateCache[myThrust.CubeGrid.EntityId] = currentState;
             }
-            Log.Debug($"CurrentState Grid={myThrust.CubeGrid.DisplayName} PollCounter={pollCounter} TurnOff={currentState.TurnOff} NearPlanet={currentState.NearPlanet} NextFrame={currentState.NextFrame}");
+
+            if (currentState.TurnOff)
+                myThrust.Enabled = false;
+
+            Log.Debug($"CurrentState Grid={myThrust.CubeGrid.DisplayName} PollCounter={pollCounter} TurnOff={currentState.TurnOff} NearPlanet={currentState.NearPlanet} cacheHit={cacheHit} NextFrame={currentState.NextFrame}");
         }
 
         private bool GetCachedState()
@@ -113,7 +117,7 @@ namespace ESThrustKiller.ZoneThrust
                 if (GridStateCache.TryGetValue(myThrust.CubeGrid.EntityId, out currentState))
                 {
 
-                    Log.Debug($"Cache hit Grid={myThrust.CubeGrid.DisplayName} ");
+                    //Log.Debug($"Cache hit Grid={myThrust.CubeGrid.DisplayName} ");
                     return true;
                 }
             }
@@ -123,7 +127,7 @@ namespace ESThrustKiller.ZoneThrust
                 return false;
             }
 
-            Log.Debug($"Cache miss Grid={myThrust.CubeGrid.DisplayName} ");
+            //Log.Debug($"Cache miss Grid={myThrust.CubeGrid.DisplayName} ");
             return false;
         }
 
@@ -137,14 +141,14 @@ namespace ESThrustKiller.ZoneThrust
                 closestPlanet = MyGamePruningStructure.GetClosestPlanet(myPosition);
                 if (closestPlanet == null)
                 {
-                    Log.Debug($"No Planet Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} turnOff={currentState.TurnOff}");
+                    //Log.Debug($"No Planet Grid={myThrust.CubeGrid.DisplayName} thruster={myThrust.DisplayNameText} turnOff={currentState.TurnOff}");
                     return;
                 }
                 if (closestPlanet.Generator != null)
                 {
                     if (!Config.TryGetPlanet(closestPlanet.Generator.FolderName, out planetInfo)) //planet not found
                     {
-                        Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
+                        //Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
                         return;
                     }
                     currentState.NearPlanet = true;
@@ -162,7 +166,7 @@ namespace ESThrustKiller.ZoneThrust
                 if (altiude > MaxAltitude)
                 {
                     currentState.NearPlanet = false;
-                    Log.Debug($"Too High Grid={myThrust.CubeGrid.DisplayName}");
+                    //Log.Debug($"Too High Grid={myThrust.CubeGrid.DisplayName}");
                     return;
                 }
                 //turnOff, bellow altitude and not in zone;
