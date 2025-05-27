@@ -164,8 +164,9 @@ namespace ESThrustKiller.ZoneBeacon
             zoneIds.Clear();
         }
 
-        public override void OnRemovedFromScene()
+        public override void MarkForClose()
         {
+            base.MarkForClose();
             if (!MyAPIGateway.Session.IsServer)
                 return;
 
