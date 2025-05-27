@@ -10,6 +10,16 @@ namespace ESThrustKiller.Configuration
     {
         const string configFilename = "Config-ESThrustKiller.xml";
 
+        public struct CacheItem
+        {
+            public bool TurnOff;
+            public bool NearPlanet;
+            public long NextFrame;
+        }
+
+        public static ZoneConfig Config = new ZoneConfig();
+        public static Dictionary<long, CacheItem> GridStateCache = new Dictionary<long, CacheItem>();
+
         public List<PlanetInfo> Planets;
         public bool DebugLog;
 
