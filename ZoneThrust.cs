@@ -146,7 +146,7 @@ namespace ESThrustKiller.ZoneThrust
                 }
                 if (closestPlanet.Generator != null)
                 {
-                    if (!Config.TryGetPlanet(closestPlanet.Generator.FolderName, out planetInfo)) //planet not found
+                    if (!Config.TryGetPlanet(closestPlanet.StorageName, out planetInfo)) //planet not found
                     {
                         //Log.Debug($"Grid={myThrust.CubeGrid.DisplayName} No Planet match");
                         return;

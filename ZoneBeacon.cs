@@ -19,11 +19,14 @@ namespace ESThrustKiller.ZoneBeacon
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Beacon), false, "LargeBlockZoneBeacon")]
     public class ZoneBeaconGameLogic : MyGameLogicComponent
     {
-        const string VisualTexture = "SafeZone_Texture_Disco";
+        const string DefaultTexture = "SafeZone_Texture_Disco";
         const float DefaultWidth = 10f;
         const float DefaultHeight = 10f;
         const float DefaultVertOffset = 0f;
         const int DefultNumZones = 2;
+        const int DefaultColourR = 0;
+        const int DefaultColourG = 255;
+        const int DefaultColourB = 0;
 
         public static Guid ZoneIdsKey = new Guid("0a1db65e-a169-4cf2-9a83-8903add9ca26");
 
@@ -34,6 +37,11 @@ namespace ESThrustKiller.ZoneBeacon
         private double vertOffset;
         private int numZones;
         private List<long> zoneIds = new List<long>();
+        private double colourR;
+        private double colourG;
+        private double colourB;
+        private string texture;
+
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -100,7 +108,18 @@ namespace ESThrustKiller.ZoneBeacon
                 return;
 
             if (myBeacon.Enabled)
-                CreateZones();
+            {
+                try
+                {
+                    CreateZones();
+                }
+                catch (Exception ex)
+                {
+                    Log.Msg($"Invalid Texture: {texture} {ex.Message}");
+                    myBeacon.Enabled = false;
+                }
+
+            }
         }
 
         public void CreateZones()
@@ -113,13 +132,13 @@ namespace ESThrustKiller.ZoneBeacon
 
             LoadConfig();
 
-            var colour = new Vector3D(0, 255, 0);
+            var colour = new Vector3D(colourR, colourG, colourB);
             var zoneIdsStr = new StringBuilder();
             var beaconPosition = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * (vertOffset - 2.5);
             for (int i = 0; i < numZones; i++)
             {
                 var position = beaconPosition + i * myBeacon.WorldMatrix.Up * (height + 0.01);
-                var zone = (MySafeZone)CrateSafeZone(MatrixD.CreateWorld(position, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, colour, $"FlyZone{i + 1}");
+                var zone = (MySafeZone)CrateSafeZone(MatrixD.CreateWorld(position, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, colour, $"FlyZone{i + 1} {{{string.Format("{0:X}", myBeacon.EntityId)}}}"); //naff but I cant get nicer ways to work
                 zoneIds.Add(zone.EntityId);
                 zoneIdsStr.Append($"{zone.EntityId},");
             }
@@ -144,7 +163,7 @@ namespace ESThrustKiller.ZoneBeacon
             myObjectBuilder_SafeZone.AccessTypeFloatingObjects = MySafeZoneAccess.Blacklist;
             myObjectBuilder_SafeZone.IsVisible = true;
             myObjectBuilder_SafeZone.ModelColor = colour;
-            myObjectBuilder_SafeZone.Texture = VisualTexture;
+            myObjectBuilder_SafeZone.Texture = texture;
             myObjectBuilder_SafeZone.Enabled = true;
             myObjectBuilder_SafeZone.SafeZoneBlockId = 0l;
             myObjectBuilder_SafeZone.Name = (myObjectBuilder_SafeZone.DisplayName = name);
@@ -177,7 +196,10 @@ namespace ESThrustKiller.ZoneBeacon
         private void LoadConfig()
         {
             if (!LoadConfigFromCD())
+            {
+                Log.Msg("Error in CD, creating new");
                 CreateCDConfig();
+            }
         }
 
         private void CreateCDConfig()
@@ -189,6 +211,8 @@ namespace ESThrustKiller.ZoneBeacon
             sb.AppendLine("Height: 10<value<1000 Verical size of each zone");
             sb.AppendLine("VerticalOffset: -500<value<500 Verical displacement of each zone relative to the beacon");
             sb.AppendLine("NumberOfZones: 1<value<10");
+            sb.AppendLine("Colours: 0<value<255");
+            sb.AppendLine("Texture: NO VALIDATION! Standard texture name prefix is 'SafeZone_Texture_' custom texture may be differrent.");
             sb.AppendLine("Toggle enabled off/on to recreate zones.");
 
             config.AddSection("Settings");
@@ -202,6 +226,14 @@ namespace ESThrustKiller.ZoneBeacon
             config.Set("Settings", "VericalOffset", vertOffset);
             numZones = DefultNumZones;
             config.Set("Settings", "NumberOfZones", numZones);
+            colourR = DefaultColourR;
+            colourG = DefaultColourG;
+            colourB = DefaultColourB;
+            config.Set("Settings", "ColourR", (int)colourR);
+            config.Set("Settings", "ColourG", (int)colourG);
+            config.Set("Settings", "ColourB", (int)colourB);
+            texture = DefaultTexture;
+            config.Set("Settings", "Texture", texture);
 
             config.Invalidate();
             myBeacon.CustomData = config.ToString();
@@ -217,6 +249,7 @@ namespace ESThrustKiller.ZoneBeacon
 
             return value;
         }
+
         private bool LoadConfigFromCD()
         {
             //Log.Msg("LoadConfigFromCD");
@@ -243,6 +276,22 @@ namespace ESThrustKiller.ZoneBeacon
                     numZones = 1;
                 if (numZones > 10)
                     numZones = 10;
+
+                if (!config.Get("Settings", "ColourR").TryGetDouble(out colourR))
+                    return false;
+                colourR = ClampDouble(colourR, 0, 255);
+
+                if (!config.Get("Settings", "ColourG").TryGetDouble(out colourG))
+                    return false;
+                colourG = ClampDouble(colourG, 0, 255);
+
+                if (!config.Get("Settings", "ColourB").TryGetDouble(out colourB))
+                    return false;
+                colourB = ClampDouble(colourB, 0, 255);
+
+                if (!config.Get("Settings", "Texture").TryGetString(out texture))
+                    return false;
+
                 return true;
             }
             Log.Msg("Failed to load config");
