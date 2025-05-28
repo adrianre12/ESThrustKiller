@@ -137,7 +137,7 @@ namespace ESThrustKiller.ZoneBeacon
             var beaconPosition = myBeacon.GetPosition() + myBeacon.WorldMatrix.Up * (vertOffset - 2.5);
             for (int i = 0; i < numZones; i++)
             {
-                var position = beaconPosition + i * myBeacon.WorldMatrix.Up * (height + 0.01);
+                var position = beaconPosition + i * myBeacon.WorldMatrix.Up * (height + 0.1);
                 var zone = (MySafeZone)CrateSafeZone(MatrixD.CreateWorld(position, myBeacon.WorldMatrix.Forward, myBeacon.WorldMatrix.Up), MySafeZoneShape.Box, colour, $"FlyZone{i + 1} {{{string.Format("{0:X}", myBeacon.EntityId)}}}"); //naff but I cant get nicer ways to work
                 zoneIds.Add(zone.EntityId);
                 zoneIdsStr.Append($"{zone.EntityId},");
