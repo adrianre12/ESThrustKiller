@@ -80,7 +80,7 @@ namespace ESThrustKiller.ZoneBeacon
         {
             base.UpdateOnceBeforeFrame();
 
-            if (myBeacon?.CubeGrid?.Physics == null) // ignore projected and other non-physical grids
+            if (myBeacon?.CubeGrid?.Physics == null || !myBeacon.IsFunctional) // ignore projected and other non-physical grids
                 return;
             string tmpIdsStr;
             if (myBeacon.Storage.TryGetValue(ZoneIdsKey, out tmpIdsStr))
