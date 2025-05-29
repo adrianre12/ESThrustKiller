@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
@@ -29,6 +30,7 @@ namespace ESThrustKiller.ZoneThrust
         private List<MySafeZone> tmpBuffer = new List<MySafeZone>();//this is to stop GetSafeZonesInAABB() creating one each call.
         private long currentFrame;
         private bool cacheHit;
+        private float damageMultiplyer = 0.005f;
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -38,17 +40,8 @@ namespace ESThrustKiller.ZoneThrust
             NeedsUpdate |= MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
 
             myThrust = Entity as IMyThrust;
-
-            myThrust.EnabledChanged += MyThrust_EnabledChanged;
         }
 
-        private void MyThrust_EnabledChanged(IMyTerminalBlock obj)
-        {
-            if (currentState.TurnOff)
-            {
-                myThrust.Enabled = false;
-            }
-        }
 
         public override void UpdateOnceBeforeFrame()
         {
@@ -72,6 +65,11 @@ namespace ESThrustKiller.ZoneThrust
 
             if (!MyAPIGateway.Session.IsServer)
                 return;
+
+            if (currentState.TurnOff)
+            {
+                DoDamage();
+            }
 
             if (pollCounter > 0) //using a poll counter to avoid having to get the frame counter each time.
             {
@@ -104,11 +102,22 @@ namespace ESThrustKiller.ZoneThrust
                 GridStateCache[myThrust.CubeGrid.EntityId] = currentState;
             }
 
-            if (currentState.TurnOff)
-                myThrust.Enabled = false;
-
             if (Config.DebugLog) // more efficent
                 Log.Debug($"CurrentState Grid={myThrust.CubeGrid.DisplayName} PollCounter={pollCounter} TurnOff={currentState.TurnOff} NearPlanet={currentState.NearPlanet} cacheHit={cacheHit} NextFrame={currentState.NextFrame}");
+        }
+
+        private void DoDamage()
+        {
+            if (!myThrust.Enabled || !myThrust.IsFunctional)
+                return;
+
+            var slim = myThrust.SlimBlock;
+            slim.DoDamage(slim.MaxIntegrity * damageMultiplyer, MyDamageType.Bolt, true);
+            damageMultiplyer *= 2;
+            slim.FatBlock.SetDamageEffect(true);
+
+            if (Config.DebugLog)
+                Log.Debug($"DoDamage {myThrust.CubeGrid.DisplayName} MaxIntegrity={slim.MaxIntegrity} Integrity={slim.Integrity} IsFunctional={myThrust.IsFunctional} ");
         }
 
         private bool GetCachedState()
@@ -190,7 +199,6 @@ namespace ESThrustKiller.ZoneThrust
                 return;
 
             GridStateCache.Remove(myThrust.CubeGrid.EntityId);
-            myThrust.EnabledChanged -= MyThrust_EnabledChanged;
         }
 
         private bool NotInSafeZone()
