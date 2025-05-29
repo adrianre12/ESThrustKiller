@@ -16,7 +16,7 @@ namespace ESThrustKiller.ZoneThrust
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Thrust), false)]
     public class ZoneThrust : MyGameLogicComponent
     {
-        const int PollPeriodSpace = 375;//12;//375; //10 mins
+        const int PollPeriodSpace = 187;//5mins //375;//12;//375; //10 mins
         const int PollPeriodPlanet = 37;//3; //37; //1 min
         const int MaxAltitude = 65000;
 
