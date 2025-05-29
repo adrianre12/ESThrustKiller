@@ -66,12 +66,12 @@ namespace ESThrustKiller.ZoneBeacon
 
             if (myBeacon.Enabled)
             {
-                Log.Msg("Enabled");
+                Log.Msg("ZoneBeacon Enabled");
                 CreateZones();
             }
             else
             {
-                Log.Msg("Disabled");
+                Log.Msg("ZoneBeacon Disabled");
                 RemoveZones();
             }
         }

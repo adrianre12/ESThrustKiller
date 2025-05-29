@@ -107,7 +107,8 @@ namespace ESThrustKiller.ZoneThrust
             if (currentState.TurnOff)
                 myThrust.Enabled = false;
 
-            Log.Debug($"CurrentState Grid={myThrust.CubeGrid.DisplayName} PollCounter={pollCounter} TurnOff={currentState.TurnOff} NearPlanet={currentState.NearPlanet} cacheHit={cacheHit} NextFrame={currentState.NextFrame}");
+            if (Config.DebugLog) // more efficent
+                Log.Debug($"CurrentState Grid={myThrust.CubeGrid.DisplayName} PollCounter={pollCounter} TurnOff={currentState.TurnOff} NearPlanet={currentState.NearPlanet} cacheHit={cacheHit} NextFrame={currentState.NextFrame}");
         }
 
         private bool GetCachedState()
