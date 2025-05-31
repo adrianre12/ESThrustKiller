@@ -11,6 +11,7 @@
 			<StrictSearch>true</StrictSearch>
             <ItemIds>
                 <string>Beacon/LargeBlockZoneBeacon</string>
+				<string>VirtualMass/ESJetpackKiller</string>
             </ItemIds>
         </Category>
     </CategoryClasses>
