@@ -16,8 +16,9 @@ namespace ESThrustKiller.ZoneThrust
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Thrust), false)]
     public class ZoneThrust : MyGameLogicComponent
     {
-        const int PollPeriodSpace = 111;//3mins //375;//12;//375; //10 mins
+        const int PollPeriodSpace = 375; //111;//3mins //12;//375; //10 mins
         const int PollPeriodPlanet = 37;//3; //37; //1 min
+        const int PollPeriodJump = 10;
         const int MaxAltitude = 65000;
 
         private IMyThrust myThrust;
@@ -31,6 +32,8 @@ namespace ESThrustKiller.ZoneThrust
         private long currentFrame;
         private bool cacheHit;
         private float damageMultiplyer = 0.005f;
+        private bool lastIsJumping;
+
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -71,10 +74,18 @@ namespace ESThrustKiller.ZoneThrust
                 DoDamage();
             }
 
+            var isJumping = myThrust.CubeGrid.JumpSystem.IsJumping;
+            if (lastIsJumping && !isJumping)
+            {
+                pollCounter = PollPeriodJump;
+                GridStateCache.Remove(myThrust.CubeGrid.EntityId);
+            }
+            lastIsJumping = isJumping;
+
             if (pollCounter > 0) //using a poll counter to avoid having to get the frame counter each time.
             {
                 pollCounter--;
-                //Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
+                Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
                 return;
             }
             currentFrame = MyAPIGateway.Session.GameplayFrameCounter;
