@@ -85,7 +85,7 @@ namespace ESThrustKiller.ZoneThrust
             if (pollCounter > 0) //using a poll counter to avoid having to get the frame counter each time.
             {
                 pollCounter--;
-                Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
+                //Log.Debug($"Update100 Grid={myThrust.CubeGrid.DisplayName} pollCounter. {pollCounter}");
                 return;
             }
             currentFrame = MyAPIGateway.Session.GameplayFrameCounter;
