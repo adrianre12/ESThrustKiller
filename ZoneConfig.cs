@@ -63,10 +63,8 @@ namespace ESThrustKiller.Configuration
         {
             if (MyAPIGateway.Utilities.FileExistsInWorldStorage(configFilename, typeof(ZoneConfig)) == true)
             {
-
                 try
                 {
-
                     ZoneConfig config = null;
                     var reader = MyAPIGateway.Utilities.ReadFileInWorldStorage(configFilename, typeof(ZoneConfig));
                     string configcontents = reader.ReadToEnd();
@@ -74,14 +72,12 @@ namespace ESThrustKiller.Configuration
                     config.ConfigLoaded = true;
                     Log.Msg($"Loaded Existing Settings From {configFilename}");
                     return config;
-
                 }
                 catch (Exception exc)
                 {
-
+                    Log.Msg(exc.ToString());
                     Log.Msg($"ERROR: Could Not Load Settings From {configFilename}. Using Empty Configuration.");
                     return new ZoneConfig();
-
                 }
 
             }
@@ -94,20 +90,16 @@ namespace ESThrustKiller.Configuration
 
             try
             {
-
                 using (var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(configFilename, typeof(ZoneConfig)))
                 {
-
                     writer.Write(MyAPIGateway.Utilities.SerializeToXML<ZoneConfig>(defaultSettings));
-
                 }
 
             }
             catch (Exception exc)
             {
-
+                Log.Msg(exc.ToString());
                 Log.Msg($"ERROR: Could Not Create {configFilename}. Default Settings Will Be Used.");
-
             }
 
             return defaultSettings;

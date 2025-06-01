@@ -165,7 +165,7 @@ namespace ESThrustKiller.ZoneBeacon
             myObjectBuilder_SafeZone.ModelColor = colour;
             myObjectBuilder_SafeZone.Texture = texture;
             myObjectBuilder_SafeZone.Enabled = true;
-            myObjectBuilder_SafeZone.SafeZoneBlockId = 0l;
+            myObjectBuilder_SafeZone.SafeZoneBlockId = 0;
             myObjectBuilder_SafeZone.Name = (myObjectBuilder_SafeZone.DisplayName = name);
             //myObjectBuilder_SafeZone.AllowedActions = CastHax(MySessionComponentSafeZones.AllowedActions, 0x3FF);
             return MyEntities.CreateFromObjectBuilderAndAdd(myObjectBuilder_SafeZone, fadeIn: false);
