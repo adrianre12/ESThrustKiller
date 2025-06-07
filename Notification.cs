@@ -8,18 +8,10 @@ using VRageMath;
 
 namespace ESThrustKiller.Notification
 {
-    // This object is always present, from the world load to world unload.
-    // NOTE: all clients and server run mod scripts, keep that in mind.
-    // NOTE: this and gamelogic comp's update methods run on the main game thread, don't do too much in a tick or you'll lower sim speed.
-    // NOTE: also mind allocations, avoid realtime allocations, re-use collections/ref-objects (except value types like structs, integers, etc).
-    //
-    // The MyUpdateOrder arg determines what update overrides are actually called.
-    // Remove any method that you don't need, none of them are required, they're only there to show what you can use.
-    // Also remove all comments you've read to avoid the overload of comments that is this file.
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     internal class Notification : MySessionComponentBase
     {
-        const int DefaultTickCounter = 100;
+        const int DefaultTickCounter = 120; //2s
         const int DefaultRefreshPlayersCounter = 10; // in multiples of DefaultTickCounter
 
         public static Notification Instance; // the only way to access session comp from other classes and the only accepted static field.
@@ -61,16 +53,10 @@ namespace ESThrustKiller.Notification
             Instance = null; // important for avoiding this object to remain allocated in memory
         }
 
-        public override void HandleInput()
-        {
-            // gets called 60 times a second before all other update methods, regardless of framerate, game pause or MyUpdateOrder.
-        }
-
         public override void UpdateAfterSimulation()
         {
             if (!MyAPIGateway.Session.IsServer)
                 return;
-
             // executed every tick, 60 times a second, after physics simulation and only if game is not paused.
             if (tickCounter > 0)
             {
@@ -90,13 +76,6 @@ namespace ESThrustKiller.Notification
             }
 
             CheckPlayerPositions();
-
-            //MyLog.Default.WriteLineAndConsole("ZoneNotification UpdateAfterSimulation Tick");
-
-            //if (MyAPIGateway.Session?.Player != null)
-            //    MyAPIGateway.Utilities.ShowNotification("ZoneNotification UpdateAfterSimulation Tick", 1000, MyFontEnum.Red);
-
-
         }
 
         private void RefreshPlayers()
@@ -104,7 +83,6 @@ namespace ESThrustKiller.Notification
             //Log.Msg("RefreshPlayers");
             players.Clear();
             MyAPIGateway.Players.GetPlayers(players);
-
         }
 
         private void CheckPlayerPositions()
@@ -119,6 +97,13 @@ namespace ESThrustKiller.Notification
         private void CheckPlayerPosition(IMyPlayer player)
         {
             playerPosition = player.GetPosition();
+            /* var closestPlanet = MyGamePruningStructure.GetClosestPlanet(playerPosition);
+             Log.Msg($" planet name {closestPlanet.Name}");
+             var foundPlanet = MyVisualScriptLogicProvider.GetEntityByName(closestPlanet.Name);
+             if (foundPlanet != null)
+             {
+                 Log.Msg($"found planet name {foundPlanet.Name}");
+             }*/
             double distanceSqr;
             double lastDistance = double.MaxValue;
             NotificationConfig.GPS closestZone = new NotificationConfig.GPS();
@@ -160,7 +145,6 @@ namespace ESThrustKiller.Notification
                 }
 
             }
-
 
             if (sendMessage)
             {
