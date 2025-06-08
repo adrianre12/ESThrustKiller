@@ -33,7 +33,7 @@ namespace ESThrustKiller.Notification
             if (!MyAPIGateway.Session.IsServer)
                 return;
 
-            Log.Msg("ZoneNotification Before Start");
+            Log.Msg("ZoneNotification Start");
             tickCounter = DefaultTickCounter;
             config = new NotificationConfig();
             config = config.LoadSettings();
@@ -42,14 +42,12 @@ namespace ESThrustKiller.Notification
             {
                 //using squared radius to optimise distance checks
                 zonePositions.Add(new NotificationConfig.GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessage, gps.AlertTimeMs));
-                Log.Msg($"Adding {gps.UniqueName}");
+                Log.Msg($"Adding Zone {gps.UniqueName}");
             }
         }
 
         protected override void UnloadData()
         {
-            // executed when world is exited to unregister events and stuff
-
             Instance = null; // important for avoiding this object to remain allocated in memory
         }
 
@@ -57,7 +55,7 @@ namespace ESThrustKiller.Notification
         {
             if (!MyAPIGateway.Session.IsServer)
                 return;
-            // executed every tick, 60 times a second, after physics simulation and only if game is not paused.
+
             if (tickCounter > 0)
             {
                 tickCounter--;
@@ -97,28 +95,25 @@ namespace ESThrustKiller.Notification
         private void CheckPlayerPosition(IMyPlayer player)
         {
             playerPosition = player.GetPosition();
-            /* var closestPlanet = MyGamePruningStructure.GetClosestPlanet(playerPosition);
-             Log.Msg($" planet name {closestPlanet.Name}");
-             var foundPlanet = MyVisualScriptLogicProvider.GetEntityByName(closestPlanet.Name);
-             if (foundPlanet != null)
-             {
-                 Log.Msg($"found planet name {foundPlanet.Name}");
-             }*/
+
             double distanceSqr;
             double lastDistance = double.MaxValue;
             NotificationConfig.GPS closestZone = new NotificationConfig.GPS();
             string playerZoneName;
             bool inZone = false;
             bool sendMessage = false;
-            Log.Msg($"Position {playerPosition} zonePositions.count={zonePositions.Count}");
+            //Log.Msg($"Position {playerPosition} zonePositions.count={zonePositions.Count}");
             foreach (var zone in zonePositions)
             {
-                Log.Msg($"Zone Position {zone.Position}");
+                if (zone.AlertRadius == 0)
+                    continue;
+
+                //Log.Msg($"Zone Position {zone.Position}");
                 if (playerInZone.TryGetValue(player.IdentityId, out playerZoneName))
                     inZone = playerZoneName == zone.UniqueName;
 
                 distanceSqr = Vector3D.DistanceSquared(zone.Position, playerPosition);
-                Log.Msg($"Zone Position {zone.Position} distance={System.Math.Sqrt(distanceSqr)} inZone={inZone}");
+                //Log.Msg($"Zone Position {zone.Position} distance={System.Math.Sqrt(distanceSqr)} inZone={inZone}");
                 if (distanceSqr < zone.AlertRadius)
                 {
                     if (inZone)

@@ -66,7 +66,7 @@ namespace ESThrustKiller.Notification
             Log.Msg($"{configFilename} Doesn't Exist. Creating Default Configuration. ");
 
             var defaultSettings = new NotificationConfig();
-            defaultSettings.GPSlocations.Add(new GPS("Test1", Vector3D.Zero));
+            defaultSettings.GPSlocations.Add(new GPS("Example1", Vector3D.Zero));
 
             try
             {
