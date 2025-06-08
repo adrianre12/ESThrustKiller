@@ -35,28 +35,30 @@ namespace ESThrustKiller.Notification
 
         public struct PlanetInfo
         {
+            public string PlanetName;
             public double AlertRadius;
-            public string AlertMessage;
+            public string AlertMessageEnter;
+            public string AlertMessageLeave;
             public int AlertTimeMs;
 
-            public PlanetInfo(double alertRadius = 0, string alertMessage = "Alert", int alertTimeMs = 2000)
+            public PlanetInfo(string planetName, double alertRadius = 0, string alertMessageEnter = "Alert", string alertMessageLeave = "Safe", int alertTimeMs = 2000)
             {
-
+                PlanetName = planetName;
                 AlertRadius = alertRadius;
-                AlertMessage = alertMessage;
+                AlertMessageEnter = alertMessageEnter;
+                AlertMessageLeave = alertMessageLeave;
                 AlertTimeMs = alertTimeMs;
             }
         }
 
 
         public List<GPS> GPSlocations;
-
-        public Dictionary<string, PlanetInfo> PlanetLocations;
+        public List<PlanetInfo> PlanetLocations;
 
         public NotificationConfig()
         {
             GPSlocations = new List<GPS>();
-            PlanetLocations = new Dictionary<string, PlanetInfo>();
+            PlanetLocations = new List<PlanetInfo>();
         }
 
 
@@ -87,7 +89,7 @@ namespace ESThrustKiller.Notification
 
             var defaultSettings = new NotificationConfig();
             defaultSettings.GPSlocations.Add(new GPS("Example1", Vector3D.Zero));
-            defaultSettings.PlanetLocations.Add("EarthLike-12345d120000", new PlanetInfo());
+            defaultSettings.PlanetLocations.Add(new PlanetInfo("EarthLike-12345d120000"));
 
             try
             {

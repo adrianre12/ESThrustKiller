@@ -6,6 +6,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRageMath;
+using static ESThrustKiller.Notification.NotificationConfig;
 
 namespace ESThrustKiller.Notification
 {
@@ -38,21 +39,43 @@ namespace ESThrustKiller.Notification
             tickCounter = DefaultTickCounter;
             config = new NotificationConfig();
             config = config.LoadSettings();
-            zonePositions = new List<NotificationConfig.GPS>();
+            zonePositions = new List<GPS>();
             foreach (var gps in config.GPSlocations)
             {
                 //using squared radius to optimise distance checks
-                zonePositions.Add(new NotificationConfig.GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessageEnter, gps.AlertMessageLeave, gps.AlertTimeMs));
-                Log.Msg($"Adding Zone {gps.UniqueName}");
+                zonePositions.Add(new GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessageEnter, gps.AlertMessageLeave, gps.AlertTimeMs));
+                Log.Msg($"Adding Zone {gps.UniqueName} to Zone list");
             }
-            Test();
-        }
 
+            Dictionary<string, Vector3D> planetPositions = GetPlanetPositions();
+            Vector3D planetPosition;
+            foreach (var planet in config.PlanetLocations)
+            {
+                if (planetPositions.TryGetValue(planet.PlanetName, out planetPosition))
+                {
+                    zonePositions.Add(new GPS(planet.PlanetName, planetPosition, planet.AlertRadius * planet.AlertRadius, planet.AlertMessageEnter, planet.AlertMessageLeave, planet.AlertTimeMs));
+                    Log.Msg($"Adding Planet Zone {planet.PlanetName} to Zone list");
+                }
+            }
+        }
         protected override void UnloadData()
         {
             Instance = null; // important for avoiding this object to remain allocated in memory
         }
-
+        Dictionary<string, Vector3D> GetPlanetPositions()
+        {
+            Dictionary<string, Vector3D> planetPositions = new Dictionary<string, Vector3D>();
+            MyAPIGateway.Entities.GetEntities(null, e =>
+            {
+                if (e is MyPlanet)
+                {
+                    planetPositions.Add((e as MyPlanet).StorageName, (e as MyPlanet).WorldMatrix.Translation);
+                    Log.Msg($"Planet Found {(e as MyPlanet).StorageName}");
+                }
+                return false;
+            });
+            return planetPositions;
+        }
         public override void UpdateAfterSimulation()
         {
             if (!MyAPIGateway.Session.IsServer)
@@ -75,20 +98,6 @@ namespace ESThrustKiller.Notification
                 refreshPlayersCounter = DefaultRefreshPlayersCounter;
             }
             CheckPlayerPositions();
-        }
-        void Test()
-        {
-            List<MyPlanet> planets = new List<MyPlanet>();
-            MyAPIGateway.Entities.GetEntities(null, e =>
-            {
-                if (e is MyPlanet) planets.Add(e as MyPlanet);
-                return false;
-            });
-            Log.Msg($"Planets count={planets.Count}");
-            foreach (MyPlanet planet in planets)
-            {
-                Log.Msg($"Planet {planet.StorageName} position={planet.WorldMatrix.Translation}");
-            }
         }
 
         private void RefreshPlayers()
