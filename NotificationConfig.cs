@@ -18,15 +18,17 @@ namespace ESThrustKiller.Notification
             public string UniqueName;
             public Vector3D Position;
             public double AlertRadius;
-            public string AlertMessage;
+            public string AlertMessageEnter;
+            public string AlertMessageLeave;
             public int AlertTimeMs;
 
-            public GPS(string name, Vector3D position, double alertRadius = 0, string alertMessage = "Alert", int alertTimeMs = 2000)
+            public GPS(string name, Vector3D position, double alertRadius = 0, string alertMessageEnter = "Alert", string alertMessageLeave = "Safe", int alertTimeMs = 2000)
             {
                 UniqueName = name;
                 Position = position;
                 AlertRadius = alertRadius;
-                AlertMessage = alertMessage;
+                AlertMessageEnter = alertMessageEnter;
+                AlertMessageLeave = alertMessageLeave;
                 AlertTimeMs = alertTimeMs;
             }
         }

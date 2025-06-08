@@ -42,7 +42,7 @@ namespace ESThrustKiller.Notification
             foreach (var gps in config.GPSlocations)
             {
                 //using squared radius to optimise distance checks
-                zonePositions.Add(new NotificationConfig.GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessage, gps.AlertTimeMs));
+                zonePositions.Add(new NotificationConfig.GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessageEnter, gps.AlertMessageLeave, gps.AlertTimeMs));
                 Log.Msg($"Adding Zone {gps.UniqueName}");
             }
             Test();
@@ -108,6 +108,13 @@ namespace ESThrustKiller.Notification
         }
 
 
+        enum MessageType
+        {
+            None,
+            Enter,
+            Leave
+        }
+
         private void CheckPlayerPosition(IMyPlayer player)
         {
             playerPosition = player.GetPosition();
@@ -117,7 +124,7 @@ namespace ESThrustKiller.Notification
             NotificationConfig.GPS closestZone = new NotificationConfig.GPS();
             string playerZoneName;
             bool inZone = false;
-            bool sendMessage = false;
+            MessageType messageType = MessageType.None;
             //Log.Msg($"Position {playerPosition} zonePositions.count={zonePositions.Count}");
             foreach (var zone in zonePositions)
             {
@@ -134,14 +141,14 @@ namespace ESThrustKiller.Notification
                 {
                     if (inZone)
                     {
-                        sendMessage = false;
+                        messageType = MessageType.None;
                         break;
                     }
                     if (distanceSqr < lastDistance)
                     {
                         lastDistance = distanceSqr;
                         closestZone = zone;
-                        sendMessage = true;
+                        messageType = MessageType.Enter;
                         playerInZone.Add(player.IdentityId, zone.UniqueName);
                     }
                 }
@@ -149,17 +156,29 @@ namespace ESThrustKiller.Notification
                 {
                     if (inZone)
                     {
+                        closestZone = zone;
                         playerInZone.Remove(player.IdentityId);
-                        sendMessage = false;
+                        messageType = MessageType.Leave;
                         break;
                     }
                 }
 
             }
 
-            if (sendMessage)
+            switch (messageType)
             {
-                MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessage, disappearTimeMs: closestZone.AlertTimeMs, font: MyFontEnum.Red, playerId: player.IdentityId);
+                case MessageType.Enter:
+                    {
+                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageEnter, disappearTimeMs: closestZone.AlertTimeMs, font: MyFontEnum.Red, playerId: player.IdentityId);
+                        break;
+                    }
+                case MessageType.Leave:
+                    {
+                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageLeave, disappearTimeMs: closestZone.AlertTimeMs, font: MyFontEnum.Green, playerId: player.IdentityId);
+                        break;
+                    }
+                default:
+                    break;
             }
         }
     }
