@@ -40,16 +40,20 @@ namespace ESThrustKiller.Notification
             public Vector3D Position;
             public double AlertRadius;
             public string AlertMessageEnter;
+            public string ColourEnter;
             public string AlertMessageLeave;
+            public string ColourLeave;
             public int AlertTimeMs;
 
-            public GPS(string name, Vector3D position, double alertRadius = 0, string alertMessageEnter = "Alert", string alertMessageLeave = "Safe", int alertTimeMs = 2000)
+            public GPS(string name, Vector3D position, double alertRadius = 0, string alertMessageEnter = "Alert", string colourEnter = "Red", string alertMessageLeave = "Safe", string colourLeave = "Green", int alertTimeMs = 5000)
             {
                 UniqueName = name;
                 Position = position;
                 AlertRadius = alertRadius;
                 AlertMessageEnter = alertMessageEnter;
+                ColourEnter = colourEnter;
                 AlertMessageLeave = alertMessageLeave;
+                ColourLeave = colourLeave;
                 AlertTimeMs = alertTimeMs;
             }
         }
@@ -59,19 +63,22 @@ namespace ESThrustKiller.Notification
             public string PlanetName;
             public double AlertRadius;
             public string AlertMessageEnter;
+            public string ColourEnter;
             public string AlertMessageLeave;
+            public string ColourLeave;
             public int AlertTimeMs;
 
-            public PlanetInfo(string planetName, double alertRadius = 0, string alertMessageEnter = "Alert", string alertMessageLeave = "Safe", int alertTimeMs = 2000)
+            public PlanetInfo(string planetName, double alertRadius = 0, string alertMessageEnter = "Alert", string colourEnter = "Red", string alertMessageLeave = "Safe", string colourLeave = "Green", int alertTimeMs = 5000)
             {
                 PlanetName = planetName;
                 AlertRadius = alertRadius;
                 AlertMessageEnter = alertMessageEnter;
+                ColourEnter = colourEnter;
                 AlertMessageLeave = alertMessageLeave;
+                ColourLeave = colourLeave;
                 AlertTimeMs = alertTimeMs;
             }
         }
-
 
         public List<GPS> GPSlocations;
         public List<PlanetInfo> PlanetLocations;
@@ -81,6 +88,7 @@ namespace ESThrustKiller.Notification
             GPSlocations = new List<GPS>();
             PlanetLocations = new List<PlanetInfo>();
         }
+
 
 
         public NotificationConfig LoadSettings()

@@ -2,7 +2,6 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -15,6 +14,9 @@ namespace ESThrustKiller.Notification
     {
         const int DefaultTickCounter = 120; //2s
         const int DefaultRefreshPlayersCounter = 10; // in multiples of DefaultTickCounter
+        HashSet<string> fonts = new HashSet<string>() {"Debug","Red","Green","Blue", "White","DarkBlue","UrlNormal","UrlHighlight","ErrorMessageBoxCaption","ErrorMessageBoxText",
+            "InfoMessageBoxCaption","InfoMessageBoxText","ScreenCaption","GameCredits","LoadingScreen","BuildInfo","BuildInfoHighlight"};
+
 
         public static Notification Instance; // the only way to access session comp from other classes and the only accepted static field.
         private int tickCounter;
@@ -43,7 +45,8 @@ namespace ESThrustKiller.Notification
             foreach (var gps in config.GPSlocations)
             {
                 //using squared radius to optimise distance checks
-                zonePositions.Add(new GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessageEnter, gps.AlertMessageLeave, gps.AlertTimeMs));
+                zonePositions.Add(new GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius,
+                    gps.AlertMessageEnter, CheckFontColour(gps.ColourEnter), gps.AlertMessageLeave, CheckFontColour(gps.ColourLeave), gps.AlertTimeMs));
                 Log.Msg($"Adding Zone {gps.UniqueName} to Zone list");
             }
 
@@ -53,7 +56,8 @@ namespace ESThrustKiller.Notification
             {
                 if (planetPositions.TryGetValue(planet.PlanetName, out planetPosition))
                 {
-                    zonePositions.Add(new GPS(planet.PlanetName, planetPosition, planet.AlertRadius * planet.AlertRadius, planet.AlertMessageEnter, planet.AlertMessageLeave, planet.AlertTimeMs));
+                    zonePositions.Add(new GPS(planet.PlanetName, planetPosition, planet.AlertRadius * planet.AlertRadius,
+                        planet.AlertMessageEnter, CheckFontColour(planet.ColourEnter), planet.AlertMessageLeave, CheckFontColour(planet.ColourLeave), planet.AlertTimeMs));
                     Log.Msg($"Adding Planet Zone {planet.PlanetName} to Zone list");
                 }
             }
@@ -62,6 +66,16 @@ namespace ESThrustKiller.Notification
         {
             Instance = null; // important for avoiding this object to remain allocated in memory
         }
+
+        public string CheckFontColour(string font)
+        {
+            if (fonts.Contains(font))
+                return font;
+
+            Log.Msg($"Invalid colour in config: {font}");
+            return "White";
+        }
+
         Dictionary<string, Vector3D> GetPlanetPositions()
         {
             Dictionary<string, Vector3D> planetPositions = new Dictionary<string, Vector3D>();
@@ -181,12 +195,12 @@ namespace ESThrustKiller.Notification
             {
                 case MessageType.Enter:
                     {
-                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageEnter, disappearTimeMs: closestZone.AlertTimeMs, font: MyFontEnum.Red, playerId: player.IdentityId);
+                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageEnter, disappearTimeMs: closestZone.AlertTimeMs, font: closestZone.ColourEnter, playerId: player.IdentityId);
                         break;
                     }
                 case MessageType.Leave:
                     {
-                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageLeave, disappearTimeMs: closestZone.AlertTimeMs, font: MyFontEnum.Green, playerId: player.IdentityId);
+                        MyVisualScriptLogicProvider.ShowNotification(closestZone.AlertMessageLeave, disappearTimeMs: closestZone.AlertTimeMs, font: closestZone.ColourLeave, playerId: player.IdentityId);
                         break;
                     }
                 default:
