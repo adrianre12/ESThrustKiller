@@ -158,7 +158,10 @@ namespace ESThrustKiller.Notification
                         lastDistance = distanceSqr;
                         closestZone = zone;
                         messageType = MessageType.Enter;
-                        playerInZone.Add(player.IdentityId, zone.UniqueName);
+                        if (playerInZone.ContainsKey(player.IdentityId))
+                            playerInZone[player.IdentityId] = zone.UniqueName;
+                        else
+                            playerInZone.Add(player.IdentityId, zone.UniqueName);
                     }
                 }
                 else

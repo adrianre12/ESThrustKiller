@@ -4,6 +4,27 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using VRageMath;
 
+
+/*Font color string can be one of the following;
+    Debug
+    Red
+    Green
+    Blue
+    White
+    DarkBlue
+    UrlNormal
+    UrlHighlight
+    ErrorMessageBoxCaption
+    ErrorMessageBoxText
+    InfoMessageBoxCaption
+    InfoMessageBoxText
+    ScreenCaption
+    GameCredits
+    LoadingScreen
+    BuildInfo
+    BuildInfoHighlight
+*/
+
 namespace ESThrustKiller.Notification
 {
     public class NotificationConfig
