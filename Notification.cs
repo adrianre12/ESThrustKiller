@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage.Game;
@@ -44,6 +45,7 @@ namespace ESThrustKiller.Notification
                 zonePositions.Add(new NotificationConfig.GPS(gps.UniqueName, gps.Position, gps.AlertRadius * gps.AlertRadius, gps.AlertMessage, gps.AlertTimeMs));
                 Log.Msg($"Adding Zone {gps.UniqueName}");
             }
+            Test();
         }
 
         protected override void UnloadData()
@@ -72,8 +74,21 @@ namespace ESThrustKiller.Notification
                 RefreshPlayers();
                 refreshPlayersCounter = DefaultRefreshPlayersCounter;
             }
-
             CheckPlayerPositions();
+        }
+        void Test()
+        {
+            List<MyPlanet> planets = new List<MyPlanet>();
+            MyAPIGateway.Entities.GetEntities(null, e =>
+            {
+                if (e is MyPlanet) planets.Add(e as MyPlanet);
+                return false;
+            });
+            Log.Msg($"Planets count={planets.Count}");
+            foreach (MyPlanet planet in planets)
+            {
+                Log.Msg($"Planet {planet.StorageName} position={planet.WorldMatrix.Translation}");
+            }
         }
 
         private void RefreshPlayers()
@@ -91,6 +106,7 @@ namespace ESThrustKiller.Notification
                 CheckPlayerPosition(player);
             }
         }
+
 
         private void CheckPlayerPosition(IMyPlayer player)
         {
