@@ -83,8 +83,14 @@ namespace ESThrustKiller.Notification
             {
                 if (e is MyPlanet)
                 {
-                    planetPositions.Add((e as MyPlanet).StorageName, (e as MyPlanet).WorldMatrix.Translation);
-                    Log.Msg($"Planet Found {(e as MyPlanet).StorageName}");
+                    var planet = e as MyPlanet;
+                    if (planetPositions.ContainsKey(planet.StorageName))
+                    {
+                        Log.Msg($"Error duplicate planet name found: {planet.StorageName}");
+                        return false;
+                    }
+                    Log.Msg($"Planet Found {planet.StorageName}");
+                    planetPositions.Add(planet.StorageName, planet.WorldMatrix.Translation);
                 }
                 return false;
             });
